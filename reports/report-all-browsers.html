@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title id="head-title">report-all-browsers.html</title>
+      <style type="text/css">body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  /* do not increase min-width as some may use split screens */
+  min-width: 800px;
+  color: #999;
+}
+
+h1 {
+  font-size: 24px;
+  color: black;
+}
+
+h2 {
+  font-size: 16px;
+  color: black;
+}
+
+p {
+  color: black;
+}
+
+a {
+  color: #999;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/******************************
+ * SUMMARY INFORMATION
+ ******************************/
+#environment td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  vertical-align: top;
+}
+#environment tr:nth-child(odd) {
+  background-color: #f6f6f6;
+}
+#environment ul {
+  margin: 0;
+  padding: 0 20px;
+}
+
+/******************************
+ * TEST RESULT COLORS
+ ******************************/
+span.passed,
+.passed .col-result {
+  color: green;
+}
+
+span.skipped,
+span.xfailed,
+span.rerun,
+.skipped .col-result,
+.xfailed .col-result,
+.rerun .col-result {
+  color: orange;
+}
+
+span.error,
+span.failed,
+span.xpassed,
+.error .col-result,
+.failed .col-result,
+.xpassed .col-result {
+  color: red;
+}
+
+.col-links__extra {
+  margin-right: 3px;
+}
+
+/******************************
+ * RESULTS TABLE
+ *
+ * 1. Table Layout
+ * 2. Extra
+ * 3. Sorting items
+ *
+ ******************************/
+/*------------------
+ * 1. Table Layout
+ *------------------*/
+#results-table {
+  border: 1px solid #e6e6e6;
+  color: #999;
+  font-size: 12px;
+  width: 100%;
+}
+#results-table th,
+#results-table td {
+  padding: 5px;
+  border: 1px solid #e6e6e6;
+  text-align: left;
+}
+#results-table th {
+  font-weight: bold;
+}
+
+/*------------------
+ * 2. Extra
+ *------------------*/
+.logwrapper {
+  max-height: 230px;
+  overflow-y: scroll;
+  background-color: #e6e6e6;
+}
+.logwrapper.expanded {
+  max-height: none;
+}
+.logwrapper.expanded .logexpander:after {
+  content: "collapse [-]";
+}
+.logwrapper .logexpander {
+  z-index: 1;
+  position: sticky;
+  top: 10px;
+  width: max-content;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 5px 7px;
+  margin: 10px 0 10px calc(100% - 80px);
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.logwrapper .logexpander:after {
+  content: "expand [+]";
+}
+.logwrapper .logexpander:hover {
+  color: #000;
+  border-color: #000;
+}
+.logwrapper .log {
+  min-height: 40px;
+  position: relative;
+  top: -50px;
+  height: calc(100% + 50px);
+  border: 1px solid #e6e6e6;
+  color: black;
+  display: block;
+  font-family: "Courier New", Courier, monospace;
+  padding: 5px;
+  padding-right: 80px;
+  white-space: pre-wrap;
+}
+
+div.media {
+  border: 1px solid #e6e6e6;
+  float: right;
+  height: 240px;
+  margin: 0 5px;
+  overflow: hidden;
+  width: 320px;
+}
+
+.media-container {
+  display: grid;
+  grid-template-columns: 25px auto 25px;
+  align-items: center;
+  flex: 1 1;
+  overflow: hidden;
+  height: 200px;
+}
+
+.media-container--fullscreen {
+  grid-template-columns: 0px auto 0px;
+}
+
+.media-container__nav--right,
+.media-container__nav--left {
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-container__viewport {
+  cursor: pointer;
+  text-align: center;
+  height: inherit;
+}
+.media-container__viewport img,
+.media-container__viewport video {
+  object-fit: cover;
+  width: 100%;
+  max-height: 100%;
+}
+
+.media__name,
+.media__counter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex: 0 0 25px;
+  align-items: center;
+}
+
+.collapsible td:not(.col-links) {
+  cursor: pointer;
+}
+.collapsible td:not(.col-links):hover::after {
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+}
+
+.col-result {
+  width: 130px;
+}
+.col-result:hover::after {
+  content: " (hide details)";
+}
+
+.col-result.collapsed:hover::after {
+  content: " (show details)";
+}
+
+#environment-header h2:hover::after {
+  content: " (hide details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#environment-header.collapsed h2:hover::after {
+  content: " (show details)";
+  color: #bbb;
+  font-style: italic;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/*------------------
+ * 3. Sorting items
+ *------------------*/
+.sortable {
+  cursor: pointer;
+}
+.sortable.desc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: -12.5px;
+  border: 10px solid #4caf50;
+  border-bottom: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+.sortable.asc:after {
+  content: " ";
+  position: relative;
+  left: 5px;
+  bottom: 12.5px;
+  border: 10px solid #4caf50;
+  border-top: 0;
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.hidden, .summary__reload__button.hidden {
+  display: none;
+}
+
+.summary__data {
+  flex: 0 0 550px;
+}
+.summary__reload {
+  flex: 1 1;
+  display: flex;
+  justify-content: center;
+}
+.summary__reload__button {
+  flex: 0 0 300px;
+  display: flex;
+  color: white;
+  font-weight: bold;
+  background-color: #4caf50;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.summary__reload__button:hover {
+  background-color: #46a049;
+}
+.summary__spacer {
+  flex: 0 0 550px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filters,
+.collapse {
+  display: flex;
+  align-items: center;
+}
+.filters button,
+.collapse button {
+  color: #999;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.filters button:hover,
+.collapse button:hover {
+  color: #ccc;
+}
+
+.filter__label {
+  margin-right: 10px;
+}
+
+      </style>
+    
+  </head>
+  <body>
+    <h1 id="title">report-all-browsers.html</h1>
+    <p>Report generated on 27-Oct-2026 at 11:24:26 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a>
+        v4.2.0</p>
+    <div id="environment-header">
+      <h2>Environment</h2>
+    </div>
+    <table id="environment"></table>
+    <!-- TEMPLATES -->
+      <template id="template_environment_row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
+    <template id="template_results-table__body--empty">
+      <tbody class="results-table-row">
+        <tr id="not-found-message">
+          <td colspan="4">No results found. Check the filters.</td>
+        </tr>
+      </tbody>
+    </template>
+    <template id="template_results-table__tbody">
+      <tbody class="results-table-row">
+        <tr class="collapsible">
+        </tr>
+        <tr class="extras-row">
+          <td class="extra" colspan="4">
+            <div class="extraHTML"></div>
+            <div class="media">
+              <div class="media-container">
+                  <div class="media-container__nav--left">&lt;</div>
+                  <div class="media-container__viewport">
+                    <img src="" />
+                    <video controls>
+                      <source src="" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="media-container__nav--right">&gt;</div>
+                </div>
+                <div class="media__name"></div>
+                <div class="media__counter"></div>
+            </div>
+            <div class="logwrapper">
+              <div class="logexpander"></div>
+              <div class="log"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </template>
+    <!-- END TEMPLATES -->
+    <div class="summary">
+      <div class="summary__data">
+        <h2>Summary</h2>
+        <div class="additional-summary prefix">
+        </div>
+        <p class="run-count">36 tests took 00:08:48.</p>
+        <p class="filter">(Un)check the boxes to filter the results.</p>
+        <div class="summary__reload">
+          <div class="summary__reload__button hidden" onclick="location.reload()">
+            <div>There are still tests running. <br />Reload this page to get the latest results!</div>
+          </div>
+        </div>
+        <div class="summary__spacer"></div>
+        <div class="controls">
+          <div class="filters">
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="failed" >
+            <span class="failed">9 Failed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="passed" >
+            <span class="passed">27 Passed,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="skipped" disabled>
+            <span class="skipped">0 Skipped,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xfailed" disabled>
+            <span class="xfailed">0 Expected failures,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="xpassed" disabled>
+            <span class="xpassed">0 Unexpected passes,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="error" disabled>
+            <span class="error">0 Errors,</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="rerun" disabled>
+            <span class="rerun">0 Reruns</span>
+            <input checked="true" class="filter" name="filter_checkbox" type="checkbox" data-test-result="retried" disabled>
+            <span class="retried">0 Retried,</span>
+          </div>
+          <div class="collapse">
+            <button id="show_all_details">Show all details</button>&nbsp;/&nbsp;<button id="hide_all_details">Hide all details</button>
+          </div>
+        </div>
+      </div>
+      <div class="additional-summary summary">
+      </div>
+      <div class="additional-summary postfix">
+      </div>
+    </div>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable" data-column-type="result">Result</th>
+          <th class="sortable" data-column-type="testId">Test</th>
+          <th class="sortable" data-column-type="duration">Duration</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+    </table>
+  <footer>
+    <div id="data-container" data-jsonblob="{&#34;environment&#34;: {&#34;Python&#34;: &#34;3.11.9&#34;, &#34;Platform&#34;: &#34;Windows-10-10.0.26200-SP0&#34;, &#34;Packages&#34;: {&#34;pytest&#34;: &#34;9.1.1&#34;, &#34;pluggy&#34;: &#34;1.7.0&#34;}, &#34;Plugins&#34;: {&#34;html&#34;: &#34;4.2.0&#34;, &#34;metadata&#34;: &#34;3.1.1&#34;, &#34;playwright&#34;: &#34;0.10.0&#34;}}, &#34;tests&#34;: {&#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[chromium]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART001_add_one_product_to_cart[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART001_add_one_product_to_cart_chromium__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[chromium]&#34;, &#34;duration&#34;: &#34;00:00:05&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART002_add_two_products_to_cart[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:05&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART002_add_two_products_to_cart_chromium__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[chromium]&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART003_remove_product_and_check_empty_cart_chromium__PASS.png\n&#34;}], &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[chromium]&#34;, &#34;duration&#34;: &#34;00:00:23&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT001_submit_complete_contact_form[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:23&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/contact_us&amp;#x27;&amp;gt;\n\n    def test_CONT001_submit_complete_contact_form(page):\n        open_contact(page)\n    \n        # 1. Register the dialog handler to automatically click &amp;quot;OK&amp;quot; on the popup\n        page.once(&amp;quot;dialog&amp;quot;, lambda dialog: dialog.accept())\n    \n        # 2. Fill in the form fields\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;name&amp;quot;]&amp;#x27;).fill(&amp;quot;Test User&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;email&amp;quot;]&amp;#x27;).fill(&amp;quot;test.user@example.com&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;subject&amp;quot;]&amp;#x27;).fill(&amp;quot;Playwright test message&amp;quot;)\n        page.locator(&amp;quot;#message&amp;quot;).fill(&amp;quot;This is an automated test submission.&amp;quot;)\n    \n        # 3. Bypass ad overlays completely using JavaScript evaluation to click submit\n        submit_button = page.locator(&amp;#x27;input[data-qa=&amp;quot;submit-button&amp;quot;]&amp;#x27;)\n        submit_button.scroll_into_view_if_needed()\n        submit_button.evaluate(&amp;quot;button =&amp;gt; button.click()&amp;quot;)\n    \n        # 4. Verify the success message using the specific CSS class and text\n        success_message = page.locator(&amp;quot;.status.alert.alert-success&amp;quot;)\n    \n&amp;gt;       expect(success_message).to_contain_text(\n            &amp;quot;Success! Your details have been submitted successfully.&amp;quot;,\n            timeout=20000\n        )\nE       AssertionError: Locator expected to contain text &amp;#x27;Success! Your details have been submitted successfully.&amp;#x27;\nE       Actual value:  \nE       Call log:\nE         - Expect &amp;quot;to_contain_text&amp;quot; locator(&amp;quot;.status.alert.alert-success&amp;quot;) with timeout 20000ms\nE         - waiting for locator(&amp;quot;.status.alert.alert-success&amp;quot;)\nE           - waiting for &amp;quot;https://automationexercise.com/contact_us&amp;quot; navigation to finish...\nE           - navigated to &amp;quot;https://automationexercise.com/contact_us&amp;quot;\nE           41 \u00d7 locator resolved to &amp;lt;div class=&amp;quot;status alert alert-success&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;\nE              - unexpected value &amp;quot;&amp;quot;\nE       \nE       Aria snapshot:\nE       - banner:\nE         - link &amp;quot;Website for automation practice&amp;quot;:\nE           - /url: /\nE           - img &amp;quot;Website for automation practice&amp;quot;\nE         - list:\nE           - listitem:\nE             - link &amp;quot;\uf015 Home&amp;quot;:\nE               - /url: /\nE           - listitem:\nE             - link &amp;quot;\ue8f8 Products&amp;quot;:\nE               - /url: /products\nE           - listitem:\nE             - link &amp;quot;\uf07a Cart&amp;quot;:\nE               - /url: /view_cart\nE           - listitem:\nE             - link &amp;quot;\uf023 Signup / Login&amp;quot;:\nE               - /url: /login\nE           - listitem:\nE             - link &amp;quot;\uf03a Test Cases&amp;quot;:\nE               - /url: /test_cases\nE           - listitem:\nE             - link &amp;quot;\uf03a API Testing&amp;quot;:\nE               - /url: /api_list\nE           - listitem:\nE             - link &amp;quot;\uf16a Video Tutorials&amp;quot;:\nE               - /url: https://www.youtube.com/c/AutomationExercise\nE           - listitem:\nE             - link &amp;quot;\uf0e0 Contact us&amp;quot;:\nE               - /url: /contact_us\nE       - heading &amp;quot;Contact Us&amp;quot; [level=2]:\nE         - text: Contact\nE         - strong: Us\nE       - text: &amp;quot;Note: Below contact form is for testing purpose.&amp;quot;\nE       - heading &amp;quot;Get In Touch&amp;quot; [level=2]\nE       - textbox &amp;quot;Name&amp;quot;\nE       - textbox &amp;quot;Email&amp;quot;\nE       - textbox &amp;quot;Subject&amp;quot;\nE       - textbox &amp;quot;Your Message Here&amp;quot;\nE       - button &amp;quot;Choose File&amp;quot;\nE       - button &amp;quot;Submit&amp;quot;\nE       - heading &amp;quot;Feedback For Us&amp;quot; [level=2]\nE       - paragraph: We really appreciate your response to our website.\nE       - paragraph:\nE         - text: Kindly share your feedback with us at\nE         - link &amp;quot;feedback@automationexercise.com&amp;quot;:\nE           - /url: mailto:feedback@automationexercise.com\nE         - text: .\nE       - paragraph: If you have any suggestion areas or improvements, do let us know. We will definitely work on it.\nE       - paragraph: Thank you\nE       - insertion:\nE         - iframe\nE       - contentinfo:\nE         - heading &amp;quot;Subscription&amp;quot; [level=2]\nE         - textbox &amp;quot;Your email address&amp;quot;\nE         - button &amp;quot;\uf18e&amp;quot;\nE         - paragraph: Get the most recent updates from our site and be updated your self...\nE         - paragraph: Copyright \u00a9 2021 All rights reserved\n\ntests\\test_contact.py:43: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT001_submit_complete_contact_form_chromium__FAIL.png\n&#34;}], &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[chromium]&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT002_submit_contact_form_with_missing_fields_chromium__PASS.png\n&#34;}], &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[chromium]&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT003_contact_form_invalid_email[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT003_contact_form_invalid_email_chromium__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[chromium]&#34;, &#34;duration&#34;: &#34;00:00:24&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG001_login_with_valid_credentials[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:24&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/login&amp;#x27;&amp;gt;\n\n    def test_LOG001_login_with_valid_credentials(page):\n        &amp;quot;&amp;quot;&amp;quot;Positive: log in using the configured credentials.&amp;quot;&amp;quot;&amp;quot;\n    \n        go_to_login(page)\n    \n        page.locator(&amp;#x27;input[data-qa=&amp;quot;login-email&amp;quot;]&amp;#x27;).fill(TEST_EMAIL)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;login-password&amp;quot;]&amp;#x27;).fill(TEST_PASSWORD)\n    \n        page.locator(&amp;#x27;button[data-qa=&amp;quot;login-button&amp;quot;]&amp;#x27;).click()\n    \n        expect(\n            page.get_by_text(&amp;quot;Logged in as&amp;quot;, exact=False)\n&amp;gt;       ).to_be_visible(timeout=20000)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: None\nE       Error: element(s) not found \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_text(&amp;quot;Logged in as&amp;quot;) with timeout 20000ms\nE         - waiting for get_by_text(&amp;quot;Logged in as&amp;quot;)\nE       \nE       Aria snapshot:\nE       - banner:\nE         - heading &amp;quot;Web server is returning an unknown error Error code 520&amp;quot; [level=1]\nE         - text: Visit\nE         - link &amp;quot;cloudflare.com&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE         - text: for more information. 2026-10-27 06:16:49 UTC\nE       - text: You\nE       - heading &amp;quot;Browser&amp;quot; [level=3]\nE       - text: Working\nE       - link:\nE         - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Karachi\nE       - heading &amp;quot;Cloudflare&amp;quot; [level=3]:\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Working automationexercise.com\nE       - heading &amp;quot;Host&amp;quot; [level=3]\nE       - text: Error\nE       - heading &amp;quot;What happened?&amp;quot; [level=2]\nE       - paragraph: There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.\nE       - heading &amp;quot;What can I do?&amp;quot; [level=2]\nE       - heading &amp;quot;If you are a visitor of this website:&amp;quot; [level=3]\nE       - paragraph: Please try again in a few minutes.\nE       - heading &amp;quot;If you are the owner of this website:&amp;quot; [level=3]\nE       - paragraph:\nE         - text: There is an issue between Cloudflare&amp;#x27;s cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team. Please include the Ray ID (which is at the bottom of this error page).\nE         - link &amp;quot;Additional troubleshooting resources&amp;quot;:\nE           - /url: https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/\nE         - text: .\nE       - paragraph:\nE         - text: &amp;quot;Cloudflare Ray ID:&amp;quot;\nE         - strong: a50f92f95ff9721a\nE         - text: &amp;quot;\u2022 Your IP:&amp;quot;\nE         - button &amp;quot;Click to reveal&amp;quot;\nE         - text: \u2022 Performance &amp;amp; security by\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\n\ntests\\test_login.py:36: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG001_login_with_valid_credentials_chromium__FAIL.png\n&#34;}], &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[chromium]&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG002_login_with_incorrect_credentials_chromium__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[chromium]&#34;, &#34;duration&#34;: &#34;00:00:06&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG003_login_with_empty_fields[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:06&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG003_login_with_empty_fields_chromium__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[chromium]&#34;, &#34;duration&#34;: &#34;00:00:11&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH001_search_for_existing_product[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:11&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH001_search_for_existing_product_chromium__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[chromium]&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH002_search_for_nonexistent_product_chromium__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH003_submit_empty_search[chromium]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH003_submit_empty_search[chromium]&#34;, &#34;duration&#34;: &#34;00:00:11&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH003_submit_empty_search[chromium]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:11&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nURL after empty search: https://automationexercise.com/products?search=\nEmpty search submission completed.\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH003_submit_empty_search_chromium__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[firefox]&#34;, &#34;duration&#34;: &#34;00:00:14&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART001_add_one_product_to_cart[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:14&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART001_add_one_product_to_cart_firefox__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[firefox]&#34;, &#34;duration&#34;: &#34;00:00:11&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART002_add_two_products_to_cart[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:11&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART002_add_two_products_to_cart_firefox__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[firefox]&#34;, &#34;duration&#34;: &#34;00:00:07&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:07&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART003_remove_product_and_check_empty_cart_firefox__PASS.png\n&#34;}], &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[firefox]&#34;, &#34;duration&#34;: &#34;00:00:24&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT001_submit_complete_contact_form[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:24&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/contact_us&amp;#x27;&amp;gt;\n\n    def test_CONT001_submit_complete_contact_form(page):\n        open_contact(page)\n    \n        # 1. Register the dialog handler to automatically click &amp;quot;OK&amp;quot; on the popup\n        page.once(&amp;quot;dialog&amp;quot;, lambda dialog: dialog.accept())\n    \n        # 2. Fill in the form fields\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;name&amp;quot;]&amp;#x27;).fill(&amp;quot;Test User&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;email&amp;quot;]&amp;#x27;).fill(&amp;quot;test.user@example.com&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;subject&amp;quot;]&amp;#x27;).fill(&amp;quot;Playwright test message&amp;quot;)\n        page.locator(&amp;quot;#message&amp;quot;).fill(&amp;quot;This is an automated test submission.&amp;quot;)\n    \n        # 3. Bypass ad overlays completely using JavaScript evaluation to click submit\n        submit_button = page.locator(&amp;#x27;input[data-qa=&amp;quot;submit-button&amp;quot;]&amp;#x27;)\n        submit_button.scroll_into_view_if_needed()\n        submit_button.evaluate(&amp;quot;button =&amp;gt; button.click()&amp;quot;)\n    \n        # 4. Verify the success message using the specific CSS class and text\n        success_message = page.locator(&amp;quot;.status.alert.alert-success&amp;quot;)\n    \n&amp;gt;       expect(success_message).to_contain_text(\n            &amp;quot;Success! Your details have been submitted successfully.&amp;quot;,\n            timeout=20000\n        )\nE       AssertionError: Locator expected to contain text &amp;#x27;Success! Your details have been submitted successfully.&amp;#x27;\nE       Actual value:  \nE       Call log:\nE         - Expect &amp;quot;to_contain_text&amp;quot; locator(&amp;quot;.status.alert.alert-success&amp;quot;) with timeout 20000ms\nE         - waiting for locator(&amp;quot;.status.alert.alert-success&amp;quot;)\nE           - waiting for &amp;quot;https://automationexercise.com/contact_us&amp;quot; navigation to finish...\nE           - navigated to &amp;quot;https://automationexercise.com/contact_us&amp;quot;\nE           38 \u00d7 locator resolved to &amp;lt;div class=&amp;quot;status alert alert-success&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;\nE              - unexpected value &amp;quot;&amp;quot;\nE       \nE       Aria snapshot:\nE       - banner:\nE         - link &amp;quot;Website for automation practice&amp;quot;:\nE           - /url: /\nE           - img &amp;quot;Website for automation practice&amp;quot;\nE         - list:\nE           - listitem:\nE             - link &amp;quot;\uf015 Home&amp;quot;:\nE               - /url: /\nE           - listitem:\nE             - link &amp;quot;\ue8f8 Products&amp;quot;:\nE               - /url: /products\nE           - listitem:\nE             - link &amp;quot;\uf07a Cart&amp;quot;:\nE               - /url: /view_cart\nE           - listitem:\nE             - link &amp;quot;\uf023 Signup / Login&amp;quot;:\nE               - /url: /login\nE           - listitem:\nE             - link &amp;quot;\uf03a Test Cases&amp;quot;:\nE               - /url: /test_cases\nE           - listitem:\nE             - link &amp;quot;\uf03a API Testing&amp;quot;:\nE               - /url: /api_list\nE           - listitem:\nE             - link &amp;quot;\uf16a Video Tutorials&amp;quot;:\nE               - /url: https://www.youtube.com/c/AutomationExercise\nE           - listitem:\nE             - link &amp;quot;\uf0e0 Contact us&amp;quot;:\nE               - /url: /contact_us\nE       - heading &amp;quot;Contact Us&amp;quot; [level=2]:\nE         - text: Contact\nE         - strong: Us\nE       - text: &amp;quot;Note: Below contact form is for testing purpose.&amp;quot;\nE       - link &amp;quot;Software testing services&amp;quot;:\nE         - img\nE         - text: Software testing services\nE       - heading &amp;quot;Get In Touch&amp;quot; [level=2]\nE       - textbox &amp;quot;Name&amp;quot;\nE       - textbox &amp;quot;Email&amp;quot;\nE       - textbox &amp;quot;Subject&amp;quot;\nE       - textbox &amp;quot;Your Message Here&amp;quot;\nE       - button &amp;quot;Choose File&amp;quot;\nE       - button &amp;quot;Submit&amp;quot;\nE       - heading &amp;quot;Feedback For Us&amp;quot; [level=2]\nE       - paragraph: We really appreciate your response to our website.\nE       - paragraph:\nE         - text: Kindly share your feedback with us at\nE         - link &amp;quot;feedback@automationexercise.com&amp;quot;:\nE           - /url: mailto:feedback@automationexercise.com\nE         - text: .\nE       - paragraph: If you have any suggestion areas or improvements, do let us know. We will definitely work on it.\nE       - paragraph: Thank you\nE       - insertion:\nE         - heading &amp;quot;These are topics related to the article that might interest you&amp;quot; [level=2]: Discover more\nE         - link &amp;quot;Automation software tools&amp;quot;\nE         - link &amp;quot;Workflow automation services&amp;quot;\nE         - link &amp;quot;Business process automation&amp;quot;\nE       - contentinfo:\nE         - heading &amp;quot;Subscription&amp;quot; [level=2]\nE         - textbox &amp;quot;Your email address&amp;quot;\nE         - button &amp;quot;\uf18e&amp;quot;\nE         - paragraph: Get the most recent updates from our site and be updated your self...\nE         - paragraph: Copyright \u00a9 2021 All rights reserved\n\ntests\\test_contact.py:43: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT001_submit_complete_contact_form_firefox__FAIL.png\n&#34;}], &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[firefox]&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT002_submit_contact_form_with_missing_fields_firefox__PASS.png\n&#34;}], &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[firefox]&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT003_contact_form_invalid_email[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT003_contact_form_invalid_email_firefox__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[firefox]&#34;, &#34;duration&#34;: &#34;00:00:08&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG001_login_with_valid_credentials[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:08&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG001_login_with_valid_credentials_firefox__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[firefox]&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG002_login_with_incorrect_credentials_firefox__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[firefox]&#34;, &#34;duration&#34;: &#34;00:00:12&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG003_login_with_empty_fields[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:12&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG003_login_with_empty_fields_firefox__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[firefox]&#34;, &#34;duration&#34;: &#34;00:00:12&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH001_search_for_existing_product[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:12&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH001_search_for_existing_product_firefox__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[firefox]&#34;, &#34;duration&#34;: &#34;00:00:10&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:10&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH002_search_for_nonexistent_product_firefox__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH003_submit_empty_search[firefox]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH003_submit_empty_search[firefox]&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH003_submit_empty_search[firefox]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nURL after empty search: https://automationexercise.com/products?search=\nEmpty search submission completed.\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH003_submit_empty_search_firefox__PASS.png\n&#34;}], &#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART001_add_one_product_to_cart[webkit]&#34;, &#34;duration&#34;: &#34;00:00:19&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART001_add_one_product_to_cart[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:19&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def test_CART001_add_one_product_to_cart(page):\n        &amp;quot;&amp;quot;&amp;quot;Positive: add one product and verify a cart row exists.&amp;quot;&amp;quot;&amp;quot;\n        open_products(page)\n&amp;gt;       add_first_product(page)\n\ntests\\test_cart.py:39: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def add_first_product(page):\n        first_card = page.locator(&amp;quot;.product-image-wrapper&amp;quot;).first\n        first_card.scroll_into_view_if_needed()\n        first_card.locator(&amp;quot;a.add-to-cart&amp;quot;).first.click()\n    \n        expect(\n            page.get_by_text(&amp;quot;Your product has been added to cart&amp;quot;, exact=False)\n&amp;gt;       ).to_be_visible()\n          ^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: hidden \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_text(&amp;quot;Your product has been added to cart&amp;quot;) with timeout 5000ms\nE         - waiting for get_by_text(&amp;quot;Your product has been added to cart&amp;quot;)\nE           13 \u00d7 locator resolved to &amp;lt;p class=&amp;quot;text-center&amp;quot;&amp;gt;Your product has been added to cart.&amp;lt;/p&amp;gt;\nE              - unexpected value &amp;quot;hidden&amp;quot;\nE       \nE       Aria snapshot:\nE       - banner:\nE         - link &amp;quot;Website for automation practice&amp;quot;:\nE           - /url: /\nE           - img &amp;quot;Website for automation practice&amp;quot;\nE         - list:\nE           - listitem:\nE             - link &amp;quot;\uf015 Home&amp;quot;:\nE               - /url: /\nE           - listitem:\nE             - link &amp;quot;\ue8f8 Products&amp;quot;:\nE               - /url: /products\nE           - listitem:\nE             - link &amp;quot;\uf07a Cart&amp;quot;:\nE               - /url: /view_cart\nE           - listitem:\nE             - link &amp;quot;\uf023 Signup / Login&amp;quot;:\nE               - /url: /login\nE           - listitem:\nE             - link &amp;quot;\uf03a Test Cases&amp;quot;:\nE               - /url: /test_cases\nE           - listitem:\nE             - link &amp;quot;\uf03a API Testing&amp;quot;:\nE               - /url: /api_list\nE           - listitem:\nE             - link &amp;quot;\uf16a Video Tutorials&amp;quot;:\nE               - /url: https://www.youtube.com/c/AutomationExercise\nE           - listitem:\nE             - link &amp;quot;\uf0e0 Contact us&amp;quot;:\nE               - /url: /contact_us\nE       - img &amp;quot;Website for practice&amp;quot;\nE       - textbox &amp;quot;Search Product&amp;quot;\nE       - button &amp;quot;\uf002&amp;quot;\nE       - heading &amp;quot;Category&amp;quot; [level=2]\nE       - heading &amp;quot;\uf067 Women&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Women&amp;quot;:\nE           - /url: &amp;quot;#Women&amp;quot;\nE       - heading &amp;quot;\uf067 Men&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Men&amp;quot;:\nE           - /url: &amp;quot;#Men&amp;quot;\nE       - heading &amp;quot;\uf067 Kids&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Kids&amp;quot;:\nE           - /url: &amp;quot;#Kids&amp;quot;\nE       - heading &amp;quot;Brands&amp;quot; [level=2]\nE       - list:\nE         - listitem:\nE           - link &amp;quot;(6) Polo&amp;quot;:\nE             - /url: /brand_products/Polo\nE         - listitem:\nE           - link &amp;quot;(5) H&amp;amp;M&amp;quot;:\nE             - /url: /brand_products/H&amp;amp;M\nE         - listitem:\nE           - link &amp;quot;(5) Madame&amp;quot;:\nE             - /url: /brand_products/Madame\nE         - listitem:\nE           - link &amp;quot;(3) Mast &amp;amp; Harbour&amp;quot;:\nE             - /url: /brand_products/Mast &amp;amp; Harbour\nE         - listitem:\nE           - link &amp;quot;(4) Babyhug&amp;quot;:\nE             - /url: /brand_products/Babyhug\nE         - listitem:\nE           - link &amp;quot;(3) Allen Solly Junior&amp;quot;:\nE             - /url: /brand_products/Allen Solly Junior\nE         - listitem:\nE           - link &amp;quot;(3) Kookie Kids&amp;quot;:\nE             - /url: /brand_products/Kookie Kids\nE         - listitem:\nE           - link &amp;quot;(5) Biba&amp;quot;:\nE             - /url: /brand_products/Biba\nE       - heading &amp;quot;All Products&amp;quot; [level=2]\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 500&amp;quot; [level=2]\nE       - paragraph: Blue Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 500&amp;quot; [level=2]\nE       - paragraph: Blue Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/1\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Men Tshirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Men Tshirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/2\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Sleeveless Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Sleeveless Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/3\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Stylish Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Stylish Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/4\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 600&amp;quot; [level=2]\nE       - paragraph: Winter Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 600&amp;quot; [level=2]\nE       - paragraph: Winter Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/5\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Summer White Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Summer White Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/6\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Madame Top For Women\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Madame Top For Women\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/7\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 700&amp;quot; [level=2]\nE       - paragraph: Fancy Green Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 700&amp;quot; [level=2]\nE       - paragraph: Fancy Green Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/8\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 499&amp;quot; [level=2]\nE       - paragraph: Sleeves Printed Top - White\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 499&amp;quot; [level=2]\nE       - paragraph: Sleeves Printed Top - White\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/11\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 359&amp;quot; [level=2]\nE       - paragraph: Half Sleeves Top Schiffli Detailing - Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 359&amp;quot; [level=2]\nE       - paragraph: Half Sleeves Top Schiffli Detailing - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/12\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 278&amp;quot; [level=2]\nE       - paragraph: Frozen Tops For Kids\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 278&amp;quot; [level=2]\nE       - paragraph: Frozen Tops For Kids\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/13\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 679&amp;quot; [level=2]\nE       - paragraph: Full Sleeves Top Cherry - Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 679&amp;quot; [level=2]\nE       - paragraph: Full Sleeves Top Cherry - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/14\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 315&amp;quot; [level=2]\nE       - paragraph: Printed Off Shoulder Top - White\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 315&amp;quot; [level=2]\nE       - paragraph: Printed Off Shoulder Top - White\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/15\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 478&amp;quot; [level=2]\nE       - paragraph: Sleeves Top and Short - Blue &amp;amp; Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 478&amp;quot; [level=2]\nE       - paragraph: Sleeves Top and Short - Blue &amp;amp; Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/16\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Little Girls Mr. Panda Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Little Girls Mr. Panda Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/18\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1050&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Patch Gown - Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1050&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Patch Gown - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/19\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1190&amp;quot; [level=2]\nE       - paragraph: Cotton Mull Embroidered Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1190&amp;quot; [level=2]\nE       - paragraph: Cotton Mull Embroidered Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/20\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1530&amp;quot; [level=2]\nE       - paragraph: Blue Cotton Indie Mickey Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1530&amp;quot; [level=2]\nE       - paragraph: Blue Cotton Indie Mickey Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/21\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1600&amp;quot; [level=2]\nE       - paragraph: Long Maxi Tulle Fancy Dress Up Outfits -Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1600&amp;quot; [level=2]\nE       - paragraph: Long Maxi Tulle Fancy Dress Up Outfits -Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/22\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1100&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Print Fit &amp;amp; Flare Net Dress - Multi\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1100&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Print Fit &amp;amp; Flare Net Dress - Multi\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/23\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 849&amp;quot; [level=2]\nE       - paragraph: Colour Blocked Shirt \u2013 Sky Blue\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 849&amp;quot; [level=2]\nE       - paragraph: Colour Blocked Shirt \u2013 Sky Blue\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/24\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1299&amp;quot; [level=2]\nE       - paragraph: Pure Cotton V-Neck T-Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1299&amp;quot; [level=2]\nE       - paragraph: Pure Cotton V-Neck T-Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/28\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Green Side Placket Detail T-Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Green Side Placket Detail T-Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/29\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Premium Polo T-Shirts\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Premium Polo T-Shirts\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/30\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 850&amp;quot; [level=2]\nE       - paragraph: Pure Cotton Neon Green Tshirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 850&amp;quot; [level=2]\nE       - paragraph: Pure Cotton Neon Green Tshirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/31\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 799&amp;quot; [level=2]\nE       - paragraph: Soft Stretch Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 799&amp;quot; [level=2]\nE       - paragraph: Soft Stretch Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/33\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Regular Fit Straight Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Regular Fit Straight Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/35\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Grunt Blue Slim Fit Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Grunt Blue Slim Fit Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/37\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 2300&amp;quot; [level=2]\nE       - paragraph: Rose Pink Embroidered Maxi Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 2300&amp;quot; [level=2]\nE       - paragraph: Rose Pink Embroidered Maxi Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/38\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 3000&amp;quot; [level=2]\nE       - paragraph: Cotton Silk Hand Block Print Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 3000&amp;quot; [level=2]\nE       - paragraph: Cotton Silk Hand Block Print Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/39\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 3500&amp;quot; [level=2]\nE       - paragraph: Rust Red Linen Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 3500&amp;quot; [level=2]\nE       - paragraph: Rust Red Linen Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/40\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 5000&amp;quot; [level=2]\nE       - paragraph: Beautiful Peacock Blue Cotton Linen Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 5000&amp;quot; [level=2]\nE       - paragraph: Beautiful Peacock Blue Cotton Linen Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/41\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Lace Top For Women\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Lace Top For Women\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/42\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1389&amp;quot; [level=2]\nE       - paragraph: GRAPHIC DESIGN MEN T SHIRT - BLUE\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1389&amp;quot; [level=2]\nE       - paragraph: GRAPHIC DESIGN MEN T SHIRT - BLUE\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/43\nE       - contentinfo:\nE         - heading &amp;quot;Subscription&amp;quot; [level=2]\nE         - textbox &amp;quot;Your email address&amp;quot;\nE         - button &amp;quot;\uf18e&amp;quot;\nE         - paragraph: Get the most recent updates from our site and be updated your self...\nE         - paragraph: Copyright \u00a9 2021 All rights reserved\n\ntests\\test_cart.py:30: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART001_add_one_product_to_cart_webkit__FAIL.png\n&#34;}], &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART002_add_two_products_to_cart[webkit]&#34;, &#34;duration&#34;: &#34;00:00:18&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART002_add_two_products_to_cart[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:18&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def test_CART002_add_two_products_to_cart(page):\n        &amp;quot;&amp;quot;&amp;quot;Positive: add two different products and verify both rows exist.&amp;quot;&amp;quot;&amp;quot;\n&amp;gt;       open_products(page)\n\ntests\\test_cart.py:48: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def open_products(page):\n        page.goto(\n            BASE_URL,\n            wait_until=&amp;quot;domcontentloaded&amp;quot;,\n            timeout=60000\n        )\n    \n        products_link = page.locator(&amp;#x27;a[href=&amp;quot;/products&amp;quot;]&amp;#x27;).first\n        expect(products_link).to_be_visible(timeout=15000)\n        products_link.click(timeout=15000)\n    \n        expect(\n            page.get_by_role(&amp;quot;heading&amp;quot;, name=&amp;quot;All Products&amp;quot;, exact=False)\n&amp;gt;       ).to_be_visible(timeout=15000)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: None\nE       Error: element(s) not found \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_role(&amp;quot;heading&amp;quot;, name=&amp;quot;All Products&amp;quot;) with timeout 15000ms\nE         - waiting for get_by_role(&amp;quot;heading&amp;quot;, name=&amp;quot;All Products&amp;quot;)\nE       \nE       Aria snapshot:\nE       - banner:\nE         - heading &amp;quot;Web server is returning an unknown error Error code 520&amp;quot; [level=1]\nE         - text: Visit\nE         - link &amp;quot;cloudflare.com&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE         - text: for more information. 2026-10-27 06:20:43 UTC\nE       - text: You\nE       - heading &amp;quot;Browser&amp;quot; [level=3]\nE       - text: Working\nE       - link:\nE         - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Karachi\nE       - heading &amp;quot;Cloudflare&amp;quot; [level=3]:\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Working automationexercise.com\nE       - heading &amp;quot;Host&amp;quot; [level=3]\nE       - text: Error\nE       - heading &amp;quot;What happened?&amp;quot; [level=2]\nE       - paragraph: There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.\nE       - heading &amp;quot;What can I do?&amp;quot; [level=2]\nE       - heading &amp;quot;If you are a visitor of this website:&amp;quot; [level=3]\nE       - paragraph: Please try again in a few minutes.\nE       - heading &amp;quot;If you are the owner of this website:&amp;quot; [level=3]\nE       - paragraph:\nE         - text: There is an issue between Cloudflare&amp;#x27;s cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team. Please include the Ray ID (which is at the bottom of this error page).\nE         - link &amp;quot;Additional troubleshooting resources&amp;quot;:\nE           - /url: https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/\nE         - text: .\nE       - paragraph:\nE         - text: &amp;quot;Cloudflare Ray ID:&amp;quot;\nE         - strong: a50f98adddeb64cb\nE         - text: &amp;quot;\u2022 Your IP:&amp;quot;\nE         - button &amp;quot;Click to reveal&amp;quot;\nE         - text: \u2022 Performance &amp;amp; security by\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\n\ntests\\test_cart.py:20: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART002_add_two_products_to_cart_webkit__FAIL.png\n&#34;}], &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[webkit]&#34;, &#34;duration&#34;: &#34;00:00:26&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_cart.py::test_CART003_remove_product_and_check_empty_cart[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:26&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def test_CART003_remove_product_and_check_empty_cart(page):\n        &amp;quot;&amp;quot;&amp;quot;Boundary: remove the only cart item and verify the cart is empty.&amp;quot;&amp;quot;&amp;quot;\n        open_products(page)\n&amp;gt;       add_first_product(page)\n\ntests\\test_cart.py:82: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def add_first_product(page):\n        first_card = page.locator(&amp;quot;.product-image-wrapper&amp;quot;).first\n        first_card.scroll_into_view_if_needed()\n        first_card.locator(&amp;quot;a.add-to-cart&amp;quot;).first.click()\n    \n        expect(\n            page.get_by_text(&amp;quot;Your product has been added to cart&amp;quot;, exact=False)\n&amp;gt;       ).to_be_visible()\n          ^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: hidden \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_text(&amp;quot;Your product has been added to cart&amp;quot;) with timeout 5000ms\nE         - waiting for get_by_text(&amp;quot;Your product has been added to cart&amp;quot;)\nE           13 \u00d7 locator resolved to &amp;lt;p class=&amp;quot;text-center&amp;quot;&amp;gt;Your product has been added to cart.&amp;lt;/p&amp;gt;\nE              - unexpected value &amp;quot;hidden&amp;quot;\nE       \nE       Aria snapshot:\nE       - banner:\nE         - link &amp;quot;Website for automation practice&amp;quot;:\nE           - /url: /\nE           - img &amp;quot;Website for automation practice&amp;quot;\nE         - list:\nE           - listitem:\nE             - link &amp;quot;\uf015 Home&amp;quot;:\nE               - /url: /\nE           - listitem:\nE             - link &amp;quot;\ue8f8 Products&amp;quot;:\nE               - /url: /products\nE           - listitem:\nE             - link &amp;quot;\uf07a Cart&amp;quot;:\nE               - /url: /view_cart\nE           - listitem:\nE             - link &amp;quot;\uf023 Signup / Login&amp;quot;:\nE               - /url: /login\nE           - listitem:\nE             - link &amp;quot;\uf03a Test Cases&amp;quot;:\nE               - /url: /test_cases\nE           - listitem:\nE             - link &amp;quot;\uf03a API Testing&amp;quot;:\nE               - /url: /api_list\nE           - listitem:\nE             - link &amp;quot;\uf16a Video Tutorials&amp;quot;:\nE               - /url: https://www.youtube.com/c/AutomationExercise\nE           - listitem:\nE             - link &amp;quot;\uf0e0 Contact us&amp;quot;:\nE               - /url: /contact_us\nE       - img &amp;quot;Website for practice&amp;quot;\nE       - textbox &amp;quot;Search Product&amp;quot;\nE       - button &amp;quot;\uf002&amp;quot;\nE       - heading &amp;quot;Category&amp;quot; [level=2]\nE       - heading &amp;quot;\uf067 Women&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Women&amp;quot;:\nE           - /url: &amp;quot;#Women&amp;quot;\nE       - heading &amp;quot;\uf067 Men&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Men&amp;quot;:\nE           - /url: &amp;quot;#Men&amp;quot;\nE       - heading &amp;quot;\uf067 Kids&amp;quot; [level=4]:\nE         - link &amp;quot;\uf067 Kids&amp;quot;:\nE           - /url: &amp;quot;#Kids&amp;quot;\nE       - heading &amp;quot;Brands&amp;quot; [level=2]\nE       - list:\nE         - listitem:\nE           - link &amp;quot;(6) Polo&amp;quot;:\nE             - /url: /brand_products/Polo\nE         - listitem:\nE           - link &amp;quot;(5) H&amp;amp;M&amp;quot;:\nE             - /url: /brand_products/H&amp;amp;M\nE         - listitem:\nE           - link &amp;quot;(5) Madame&amp;quot;:\nE             - /url: /brand_products/Madame\nE         - listitem:\nE           - link &amp;quot;(3) Mast &amp;amp; Harbour&amp;quot;:\nE             - /url: /brand_products/Mast &amp;amp; Harbour\nE         - listitem:\nE           - link &amp;quot;(4) Babyhug&amp;quot;:\nE             - /url: /brand_products/Babyhug\nE         - listitem:\nE           - link &amp;quot;(3) Allen Solly Junior&amp;quot;:\nE             - /url: /brand_products/Allen Solly Junior\nE         - listitem:\nE           - link &amp;quot;(3) Kookie Kids&amp;quot;:\nE             - /url: /brand_products/Kookie Kids\nE         - listitem:\nE           - link &amp;quot;(5) Biba&amp;quot;:\nE             - /url: /brand_products/Biba\nE       - insertion:\nE         - iframe\nE       - heading &amp;quot;All Products&amp;quot; [level=2]\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 500&amp;quot; [level=2]\nE       - paragraph: Blue Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 500&amp;quot; [level=2]\nE       - paragraph: Blue Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/1\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph:\nE         - link &amp;quot;Men&amp;quot;:\nE           - /url: &amp;quot;#&amp;quot;\nE           - img\nE           - text: Men\nE         - link &amp;quot;Tshirt&amp;quot;:\nE           - /url: &amp;quot;#&amp;quot;\nE           - img\nE           - text: Tshirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Men Tshirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/2\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Sleeveless\nE         - link &amp;quot;Dress&amp;quot;:\nE           - /url: &amp;quot;#&amp;quot;\nE           - img\nE           - text: Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Sleeveless Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/3\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Stylish Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Stylish Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/4\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 600&amp;quot; [level=2]\nE       - paragraph: Winter Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 600&amp;quot; [level=2]\nE       - paragraph: Winter Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/5\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Summer White Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 400&amp;quot; [level=2]\nE       - paragraph: Summer White Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/6\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Madame Top For Women\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Madame Top For Women\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/7\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 700&amp;quot; [level=2]\nE       - paragraph: Fancy Green Top\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 700&amp;quot; [level=2]\nE       - paragraph: Fancy Green Top\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/8\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 499&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Sleeves Printed Top - White\nE         - link &amp;quot;All Products Catalog&amp;quot;:\nE           - img\nE           - text: All Products Catalog\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 499&amp;quot; [level=2]\nE       - paragraph: Sleeves Printed Top - White\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/11\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 359&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Half Sleeves Top Schiffli Detailing - Pink\nE         - link &amp;quot;Shop T-Shirts&amp;quot;:\nE           - img\nE           - text: Shop T-Shirts\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 359&amp;quot; [level=2]\nE       - paragraph: Half Sleeves Top Schiffli Detailing - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/12\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 278&amp;quot; [level=2]\nE       - paragraph: Frozen Tops For Kids\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 278&amp;quot; [level=2]\nE       - paragraph: Frozen Tops For Kids\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/13\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 679&amp;quot; [level=2]\nE       - paragraph: Full Sleeves Top Cherry - Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 679&amp;quot; [level=2]\nE       - paragraph: Full Sleeves Top Cherry - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/14\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 315&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Printed Off Shoulder Top - White\nE         - link &amp;quot;Discover Dresses&amp;quot;:\nE           - img\nE           - text: Discover Dresses\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 315&amp;quot; [level=2]\nE       - paragraph: Printed Off Shoulder Top - White\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/15\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 478&amp;quot; [level=2]\nE       - paragraph: Sleeves Top and Short - Blue &amp;amp; Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 478&amp;quot; [level=2]\nE       - paragraph: Sleeves Top and Short - Blue &amp;amp; Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/16\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Little Girls Mr. Panda Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Little Girls Mr. Panda Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/18\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1050&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Sleeveless Unicorn Patch Gown - Pink\nE         - link &amp;quot;Browse Clothing&amp;quot;:\nE           - img\nE           - text: Browse Clothing\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1050&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Patch Gown - Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/19\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1190&amp;quot; [level=2]\nE       - paragraph: Cotton Mull Embroidered Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1190&amp;quot; [level=2]\nE       - paragraph: Cotton Mull Embroidered Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/20\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1530&amp;quot; [level=2]\nE       - paragraph: Blue Cotton Indie Mickey Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1530&amp;quot; [level=2]\nE       - paragraph: Blue Cotton Indie Mickey Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/21\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1600&amp;quot; [level=2]\nE       - paragraph: Long Maxi Tulle Fancy Dress Up Outfits -Pink\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1600&amp;quot; [level=2]\nE       - paragraph: Long Maxi Tulle Fancy Dress Up Outfits -Pink\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/22\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1100&amp;quot; [level=2]\nE       - paragraph:\nE         - text: Sleeveless Unicorn Print Fit &amp;amp; Flare Net Dress - Multi\nE         - link &amp;quot;Fancy Dress Outfits&amp;quot;:\nE           - img\nE           - text: Fancy Dress Outfits\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1100&amp;quot; [level=2]\nE       - paragraph: Sleeveless Unicorn Print Fit &amp;amp; Flare Net Dress - Multi\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/23\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 849&amp;quot; [level=2]\nE       - paragraph: Colour Blocked Shirt \u2013 Sky Blue\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 849&amp;quot; [level=2]\nE       - paragraph: Colour Blocked Shirt \u2013 Sky Blue\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/24\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1299&amp;quot; [level=2]\nE       - paragraph: Pure Cotton V-Neck T-Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1299&amp;quot; [level=2]\nE       - paragraph: Pure Cotton V-Neck T-Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/28\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Green Side Placket Detail T-Shirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1000&amp;quot; [level=2]\nE       - paragraph: Green Side Placket Detail T-Shirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/29\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Premium Polo T-Shirts\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1500&amp;quot; [level=2]\nE       - paragraph: Premium Polo T-Shirts\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/30\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 850&amp;quot; [level=2]\nE       - paragraph: Pure Cotton Neon Green Tshirt\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 850&amp;quot; [level=2]\nE       - paragraph: Pure Cotton Neon Green Tshirt\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/31\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 799&amp;quot; [level=2]\nE       - paragraph: Soft Stretch Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 799&amp;quot; [level=2]\nE       - paragraph: Soft Stretch Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/33\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Regular Fit Straight Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1200&amp;quot; [level=2]\nE       - paragraph: Regular Fit Straight Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/35\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Grunt Blue Slim Fit Jeans\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Grunt Blue Slim Fit Jeans\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/37\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 2300&amp;quot; [level=2]\nE       - paragraph: Rose Pink Embroidered Maxi Dress\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 2300&amp;quot; [level=2]\nE       - paragraph: Rose Pink Embroidered Maxi Dress\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/38\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 3000&amp;quot; [level=2]\nE       - paragraph: Cotton Silk Hand Block Print Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 3000&amp;quot; [level=2]\nE       - paragraph: Cotton Silk Hand Block Print Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/39\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 3500&amp;quot; [level=2]\nE       - paragraph: Rust Red Linen Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 3500&amp;quot; [level=2]\nE       - paragraph: Rust Red Linen Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/40\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 5000&amp;quot; [level=2]\nE       - paragraph: Beautiful Peacock Blue Cotton Linen Saree\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 5000&amp;quot; [level=2]\nE       - paragraph: Beautiful Peacock Blue Cotton Linen Saree\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/41\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Lace Top For Women\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1400&amp;quot; [level=2]\nE       - paragraph: Lace Top For Women\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/42\nE       - img &amp;quot;ecommerce website products&amp;quot;\nE       - heading &amp;quot;Rs. 1389&amp;quot; [level=2]\nE       - paragraph:\nE         - text: GRAPHIC DESIGN MEN T SHIRT - BLUE\nE         - link &amp;quot;Discover Dresses&amp;quot;:\nE           - img\nE           - text: Discover Dresses\nE       - text: \uf07a Add to cart\nE       - heading &amp;quot;Rs. 1389&amp;quot; [level=2]\nE       - paragraph: GRAPHIC DESIGN MEN T SHIRT - BLUE\nE       - text: \uf07a Add to cart\nE       - list:\nE         - listitem:\nE           - link &amp;quot;\uf0fe View Product&amp;quot;:\nE             - /url: /product_details/43\nE       - insertion\nE       - contentinfo:\nE         - heading &amp;quot;Subscription&amp;quot; [level=2]\nE         - textbox &amp;quot;Your email address&amp;quot;\nE         - button &amp;quot;\uf18e&amp;quot;\nE         - paragraph: Get the most recent updates from our site and be updated your self...\nE         - paragraph: Copyright \u00a9 2021 All rights reserved\n\ntests\\test_cart.py:30: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CART003_remove_product_and_check_empty_cart_webkit__FAIL.png\n&#34;}], &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT001_submit_complete_contact_form[webkit]&#34;, &#34;duration&#34;: &#34;00:00:25&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT001_submit_complete_contact_form[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:25&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/contact_us&amp;#x27;&amp;gt;\n\n    def test_CONT001_submit_complete_contact_form(page):\n        open_contact(page)\n    \n        # 1. Register the dialog handler to automatically click &amp;quot;OK&amp;quot; on the popup\n        page.once(&amp;quot;dialog&amp;quot;, lambda dialog: dialog.accept())\n    \n        # 2. Fill in the form fields\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;name&amp;quot;]&amp;#x27;).fill(&amp;quot;Test User&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;email&amp;quot;]&amp;#x27;).fill(&amp;quot;test.user@example.com&amp;quot;)\n        page.locator(&amp;#x27;input[data-qa=&amp;quot;subject&amp;quot;]&amp;#x27;).fill(&amp;quot;Playwright test message&amp;quot;)\n        page.locator(&amp;quot;#message&amp;quot;).fill(&amp;quot;This is an automated test submission.&amp;quot;)\n    \n        # 3. Bypass ad overlays completely using JavaScript evaluation to click submit\n        submit_button = page.locator(&amp;#x27;input[data-qa=&amp;quot;submit-button&amp;quot;]&amp;#x27;)\n        submit_button.scroll_into_view_if_needed()\n        submit_button.evaluate(&amp;quot;button =&amp;gt; button.click()&amp;quot;)\n    \n        # 4. Verify the success message using the specific CSS class and text\n        success_message = page.locator(&amp;quot;.status.alert.alert-success&amp;quot;)\n    \n&amp;gt;       expect(success_message).to_contain_text(\n            &amp;quot;Success! Your details have been submitted successfully.&amp;quot;,\n            timeout=20000\n        )\nE       AssertionError: Locator expected to contain text &amp;#x27;Success! Your details have been submitted successfully.&amp;#x27;\nE       Actual value:  \nE       Call log:\nE         - Expect &amp;quot;to_contain_text&amp;quot; locator(&amp;quot;.status.alert.alert-success&amp;quot;) with timeout 20000ms\nE         - waiting for locator(&amp;quot;.status.alert.alert-success&amp;quot;)\nE           - locator resolved to &amp;lt;div class=&amp;quot;status alert alert-success&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;\nE           - unexpected value &amp;quot;&amp;quot;\nE           - waiting for &amp;quot;https://automationexercise.com/contact_us&amp;quot; navigation to finish...\nE           - navigated to &amp;quot;https://automationexercise.com/contact_us&amp;quot;\nE           39 \u00d7 locator resolved to &amp;lt;div class=&amp;quot;status alert alert-success&amp;quot;&amp;gt;&amp;lt;/div&amp;gt;\nE              - unexpected value &amp;quot;&amp;quot;\nE       \nE       Aria snapshot:\nE       - banner:\nE         - link &amp;quot;Website for automation practice&amp;quot;:\nE           - /url: /\nE           - img &amp;quot;Website for automation practice&amp;quot;\nE         - list:\nE           - listitem:\nE             - link &amp;quot;\uf015 Home&amp;quot;:\nE               - /url: /\nE           - listitem:\nE             - link &amp;quot;\ue8f8 Products&amp;quot;:\nE               - /url: /products\nE           - listitem:\nE             - link &amp;quot;\uf07a Cart&amp;quot;:\nE               - /url: /view_cart\nE           - listitem:\nE             - link &amp;quot;\uf023 Signup / Login&amp;quot;:\nE               - /url: /login\nE           - listitem:\nE             - link &amp;quot;\uf03a Test Cases&amp;quot;:\nE               - /url: /test_cases\nE           - listitem:\nE             - link &amp;quot;\uf03a API Testing&amp;quot;:\nE               - /url: /api_list\nE           - listitem:\nE             - link &amp;quot;\uf16a Video Tutorials&amp;quot;:\nE               - /url: https://www.youtube.com/c/AutomationExercise\nE           - listitem:\nE             - link &amp;quot;\uf0e0 Contact us&amp;quot;:\nE               - /url: /contact_us\nE       - heading &amp;quot;Contact Us&amp;quot; [level=2]:\nE         - text: Contact\nE         - strong: Us\nE       - text: &amp;quot;Note: Below contact form is for testing purpose.&amp;quot;\nE       - link &amp;quot;Software testing services&amp;quot;:\nE         - img\nE         - text: Software testing services\nE       - heading &amp;quot;Get In Touch&amp;quot; [level=2]\nE       - textbox &amp;quot;Name&amp;quot;\nE       - textbox &amp;quot;Email&amp;quot;\nE       - textbox &amp;quot;Subject&amp;quot;\nE       - textbox &amp;quot;Your Message Here&amp;quot;\nE       - button &amp;quot;Choose File&amp;quot;\nE       - button &amp;quot;Submit&amp;quot;\nE       - heading &amp;quot;Feedback For Us&amp;quot; [level=2]\nE       - paragraph: We really appreciate your response to our website.\nE       - paragraph:\nE         - text: Kindly share your feedback with us at\nE         - link &amp;quot;feedback@automationexercise.com&amp;quot;:\nE           - /url: mailto:feedback@automationexercise.com\nE         - text: .\nE       - paragraph: If you have any suggestion areas or improvements, do let us know. We will definitely work on it.\nE       - paragraph: Thank you\nE       - insertion:\nE         - heading &amp;quot;These are topics related to the article that might interest you&amp;quot; [level=2]: Discover more\nE         - link &amp;quot;Automation software tools&amp;quot;\nE         - link &amp;quot;Workflow automation services&amp;quot;\nE         - link &amp;quot;Business process automation&amp;quot;\nE       - contentinfo:\nE         - heading &amp;quot;Subscription&amp;quot; [level=2]\nE         - textbox &amp;quot;Your email address&amp;quot;\nE         - button &amp;quot;\uf18e&amp;quot;\nE         - paragraph: Get the most recent updates from our site and be updated your self...\nE         - paragraph: Copyright \u00a9 2021 All rights reserved\n\ntests\\test_contact.py:43: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT001_submit_complete_contact_form_webkit__FAIL.png\n&#34;}], &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[webkit]&#34;, &#34;duration&#34;: &#34;00:00:13&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT002_submit_contact_form_with_missing_fields[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:13&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_CONT002_submit_contact_form_with_missing_fields_webkit__PASS.png\n&#34;}], &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_contact.py::test_CONT003_contact_form_invalid_email[webkit]&#34;, &#34;duration&#34;: &#34;00:00:21&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_contact.py::test_CONT003_contact_form_invalid_email[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:21&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nCould not save screenshot for test_CONT003_contact_form_invalid_email[webkit]: Page.screenshot: Timeout 15000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n\n&#34;}], &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG001_login_with_valid_credentials[webkit]&#34;, &#34;duration&#34;: &#34;00:00:23&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG001_login_with_valid_credentials[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:23&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/login&amp;#x27;&amp;gt;\n\n    def test_LOG001_login_with_valid_credentials(page):\n        &amp;quot;&amp;quot;&amp;quot;Positive: log in using the configured credentials.&amp;quot;&amp;quot;&amp;quot;\n    \n&amp;gt;       go_to_login(page)\n\ntests\\test_login.py:27: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/login&amp;#x27;&amp;gt;\n\n    def go_to_login(page):\n        page.goto(\n            BASE_URL,\n            wait_until=&amp;quot;domcontentloaded&amp;quot;,\n            timeout=60000\n        )\n    \n        login_link = page.get_by_role(\n            &amp;quot;link&amp;quot;, name=&amp;quot;Signup / Login&amp;quot;\n        )\n        expect(login_link).to_be_visible(timeout=20000)\n        login_link.click(timeout=20000)\n    \n        expect(\n            page.get_by_text(&amp;quot;Login to your account&amp;quot;, exact=True)\n&amp;gt;       ).to_be_visible(timeout=20000)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: None\nE       Error: element(s) not found \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_text(&amp;quot;Login to your account&amp;quot;, exact=True) with timeout 20000ms\nE         - waiting for get_by_text(&amp;quot;Login to your account&amp;quot;, exact=True)\nE       \nE       Aria snapshot:\nE       - banner:\nE         - heading &amp;quot;Web server is returning an unknown error Error code 520&amp;quot; [level=1]\nE         - text: Visit\nE         - link &amp;quot;cloudflare.com&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE         - text: for more information. 2026-10-27 06:22:26 UTC\nE       - text: You\nE       - heading &amp;quot;Browser&amp;quot; [level=3]\nE       - text: Working\nE       - link:\nE         - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Karachi\nE       - heading &amp;quot;Cloudflare&amp;quot; [level=3]:\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Working automationexercise.com\nE       - heading &amp;quot;Host&amp;quot; [level=3]\nE       - text: Error\nE       - heading &amp;quot;What happened?&amp;quot; [level=2]\nE       - paragraph: There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.\nE       - heading &amp;quot;What can I do?&amp;quot; [level=2]\nE       - heading &amp;quot;If you are a visitor of this website:&amp;quot; [level=3]\nE       - paragraph: Please try again in a few minutes.\nE       - heading &amp;quot;If you are the owner of this website:&amp;quot; [level=3]\nE       - paragraph:\nE         - text: There is an issue between Cloudflare&amp;#x27;s cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team. Please include the Ray ID (which is at the bottom of this error page).\nE         - link &amp;quot;Additional troubleshooting resources&amp;quot;:\nE           - /url: https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/\nE         - text: .\nE       - paragraph:\nE         - text: &amp;quot;Cloudflare Ray ID:&amp;quot;\nE         - strong: a50f9b324d924dd8\nE         - text: &amp;quot;\u2022 Your IP:&amp;quot;\nE         - button &amp;quot;Click to reveal&amp;quot;\nE         - text: \u2022 Performance &amp;amp; security by\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\n\ntests\\test_login.py:21: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG001_login_with_valid_credentials_webkit__FAIL.png\n&#34;}], &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[webkit]&#34;, &#34;duration&#34;: &#34;00:00:15&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG002_login_with_incorrect_credentials[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:15&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG002_login_with_incorrect_credentials_webkit__PASS.png\n&#34;}], &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_login.py::test_LOG003_login_with_empty_fields[webkit]&#34;, &#34;duration&#34;: &#34;00:00:17&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_login.py::test_LOG003_login_with_empty_fields[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:17&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_LOG003_login_with_empty_fields_webkit__PASS.png\n&#34;}], &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH001_search_for_existing_product[webkit]&#34;, &#34;duration&#34;: &#34;00:00:20&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH001_search_for_existing_product[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:20&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;No log output captured.--------------------------- Captured stdout teardown ---------------------------\n\nCould not save screenshot for test_SRCH001_search_for_existing_product[webkit]: Page.screenshot: Timeout 15000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n\n&#34;}], &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Failed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[webkit]&#34;, &#34;duration&#34;: &#34;00:00:24&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Failed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH002_search_for_nonexistent_product[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:24&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;page = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def test_SRCH002_search_for_nonexistent_product(page):\n        &amp;quot;&amp;quot;&amp;quot;Negative: an unmatched search should not show matching product cards.&amp;quot;&amp;quot;&amp;quot;\n    \n&amp;gt;       open_products(page)\n\ntests\\test_search.py:47: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\npage = &amp;lt;Page url=&amp;#x27;https://automationexercise.com/products&amp;#x27;&amp;gt;\n\n    def open_products(page):\n        page.goto(\n            BASE_URL,\n            wait_until=&amp;quot;domcontentloaded&amp;quot;,\n            timeout=60000\n        )\n    \n        page.get_by_role(&amp;quot;link&amp;quot;, name=&amp;quot;Products&amp;quot;).click()\n    \n        expect(\n            page.get_by_role(\n                &amp;quot;heading&amp;quot;,\n                name=&amp;quot;All Products&amp;quot;,\n                exact=False\n            )\n&amp;gt;       ).to_be_visible(timeout=20000)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AssertionError: Locator expected to be visible\nE       Actual value: None\nE       Error: element(s) not found \nE       Call log:\nE         - Expect &amp;quot;to_be_visible&amp;quot; get_by_role(&amp;quot;heading&amp;quot;, name=&amp;quot;All Products&amp;quot;) with timeout 20000ms\nE         - waiting for get_by_role(&amp;quot;heading&amp;quot;, name=&amp;quot;All Products&amp;quot;)\nE       \nE       Aria snapshot:\nE       - banner:\nE         - heading &amp;quot;Web server is returning an unknown error Error code 520&amp;quot; [level=1]\nE         - text: Visit\nE         - link &amp;quot;cloudflare.com&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE         - text: for more information. 2026-10-27 06:23:42 UTC\nE       - text: You\nE       - heading &amp;quot;Browser&amp;quot; [level=3]\nE       - text: Working\nE       - link:\nE         - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Karachi\nE       - heading &amp;quot;Cloudflare&amp;quot; [level=3]:\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\nE       - text: Working automationexercise.com\nE       - heading &amp;quot;Host&amp;quot; [level=3]\nE       - text: Error\nE       - heading &amp;quot;What happened?&amp;quot; [level=2]\nE       - paragraph: There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.\nE       - heading &amp;quot;What can I do?&amp;quot; [level=2]\nE       - heading &amp;quot;If you are a visitor of this website:&amp;quot; [level=3]\nE       - paragraph: Please try again in a few minutes.\nE       - heading &amp;quot;If you are the owner of this website:&amp;quot; [level=3]\nE       - paragraph:\nE         - text: There is an issue between Cloudflare&amp;#x27;s cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team. Please include the Ray ID (which is at the bottom of this error page).\nE         - link &amp;quot;Additional troubleshooting resources&amp;quot;:\nE           - /url: https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/\nE         - text: .\nE       - paragraph:\nE         - text: &amp;quot;Cloudflare Ray ID:&amp;quot;\nE         - strong: a50f9d114c4b516f\nE         - text: &amp;quot;\u2022 Your IP:&amp;quot;\nE         - button &amp;quot;Click to reveal&amp;quot;\nE         - text: \u2022 Performance &amp;amp; security by\nE         - link &amp;quot;Cloudflare&amp;quot;:\nE           - /url: https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&amp;amp;utm_campaign=automationexercise.com\n\ntests\\test_search.py:22: AssertionError\n--------------------------- Captured stdout teardown ---------------------------\n\nScreenshot saved: screenshots\\test_SRCH002_search_for_nonexistent_product_webkit__FAIL.png\n&#34;}], &#34;tests/test_search.py::test_SRCH003_submit_empty_search[webkit]&#34;: [{&#34;extras&#34;: [], &#34;result&#34;: &#34;Passed&#34;, &#34;testId&#34;: &#34;tests/test_search.py::test_SRCH003_submit_empty_search[webkit]&#34;, &#34;duration&#34;: &#34;00:00:23&#34;, &#34;resultsTableRow&#34;: [&#34;&lt;td class=\&#34;col-result\&#34;&gt;Passed&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-testId\&#34;&gt;tests/test_search.py::test_SRCH003_submit_empty_search[webkit]&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-duration\&#34;&gt;00:00:23&lt;/td&gt;&#34;, &#34;&lt;td class=\&#34;col-links\&#34;&gt;&lt;/td&gt;&#34;], &#34;log&#34;: &#34;----------------------------- Captured stdout call -----------------------------\nURL after empty search: https://automationexercise.com/products?search=\nEmpty search submission completed.\n--------------------------- Captured stdout teardown ---------------------------\n\nCould not save screenshot for test_SRCH003_submit_empty_search[webkit]: Page.screenshot: Timeout 15000ms exceeded.\nCall log:\n  - taking page screenshot\n  - waiting for fonts to load...\n  - fonts loaded\n\n&#34;}]}, &#34;renderCollapsed&#34;: [&#34;passed&#34;], &#34;initialSort&#34;: &#34;result&#34;, &#34;title&#34;: &#34;report-all-browsers.html&#34;}"></div>
+    <script>
+      (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { getCollapsedCategory, setCollapsedIds } = require('./storage.js')
+
+class DataManager {
+    setManager(data) {
+        const collapsedCategories = [...getCollapsedCategory(data.renderCollapsed)]
+        const collapsedIds = []
+        const tests = Object.values(data.tests).flat().map((test, index) => {
+            const collapsed = collapsedCategories.includes(test.result.toLowerCase())
+            const id = `test_${index}`
+            if (collapsed) {
+                collapsedIds.push(id)
+            }
+            return {
+                ...test,
+                id,
+                collapsed,
+            }
+        })
+        const dataBlob = { ...data, tests }
+        this.data = { ...dataBlob }
+        this.renderData = { ...dataBlob }
+        setCollapsedIds(collapsedIds)
+    }
+
+    get allData() {
+        return { ...this.data }
+    }
+
+    resetRender() {
+        this.renderData = { ...this.data }
+    }
+
+    setRender(data) {
+        this.renderData.tests = [...data]
+    }
+
+    toggleCollapsedItem(id) {
+        this.renderData.tests = this.renderData.tests.map((test) =>
+            test.id === id ? { ...test, collapsed: !test.collapsed } : test,
+        )
+    }
+
+    set allCollapsed(collapsed) {
+        this.renderData = { ...this.renderData, tests: [...this.renderData.tests.map((test) => (
+            { ...test, collapsed }
+        ))] }
+    }
+
+    get testSubset() {
+        return [...this.renderData.tests]
+    }
+
+    get environment() {
+        return this.renderData.environment
+    }
+
+    get initialSort() {
+        return this.data.initialSort
+    }
+}
+
+module.exports = {
+    manager: new DataManager(),
+}
+
+},{"./storage.js":8}],2:[function(require,module,exports){
+const mediaViewer = require('./mediaviewer.js')
+const templateEnvRow = document.getElementById('template_environment_row')
+const templateResult = document.getElementById('template_results-table__tbody')
+
+function htmlToElements(html) {
+    const temp = document.createElement('template')
+    temp.innerHTML = html
+    return temp.content.childNodes
+}
+
+const find = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return elem.querySelector(selector)
+}
+
+const findAll = (selector, elem) => {
+    if (!elem) {
+        elem = document
+    }
+    return [...elem.querySelectorAll(selector)]
+}
+
+const dom = {
+    getStaticRow: (key, value) => {
+        const envRow = templateEnvRow.content.cloneNode(true)
+        const isObj = typeof value === 'object' && value !== null
+        const values = isObj ? Object.keys(value).map((k) => `${k}: ${value[k]}`) : null
+
+        const valuesElement = htmlToElements(
+            values ? `<ul>${values.map((val) => `<li>${val}</li>`).join('')}<ul>` : `<div>${value}</div>`)[0]
+        const td = findAll('td', envRow)
+        td[0].textContent = key
+        td[1].appendChild(valuesElement)
+
+        return envRow
+    },
+    getResultTBody: ({ testId, id, log, extras, resultsTableRow, tableHtml, result, collapsed }) => {
+        const resultBody = templateResult.content.cloneNode(true)
+        resultBody.querySelector('tbody').classList.add(result.toLowerCase())
+        resultBody.querySelector('tbody').id = testId
+        resultBody.querySelector('.collapsible').dataset.id = id
+
+        resultsTableRow.forEach((html) => {
+            const t = document.createElement('template')
+            t.innerHTML = html
+            resultBody.querySelector('.collapsible').appendChild(t.content)
+        })
+
+        if (log) {
+            // Wrap lines starting with "E" with span.error to color those lines red
+            const wrappedLog = log.replace(/^E.*$/gm, (match) => `<span class="error">${match}</span>`)
+            resultBody.querySelector('.log').innerHTML = wrappedLog
+        } else {
+            resultBody.querySelector('.log').remove()
+        }
+
+        if (collapsed) {
+            resultBody.querySelector('.collapsible > .col-result')?.classList.add('collapsed')
+            resultBody.querySelector('.extras-row').classList.add('hidden')
+        } else {
+            resultBody.querySelector('.collapsible > .col-result')?.classList.remove('collapsed')
+        }
+
+        const media = []
+        extras?.forEach(({ name, format_type, content }) => {
+            if (['image', 'video'].includes(format_type)) {
+                media.push({ path: content, name, format_type })
+            }
+
+            if (format_type === 'html') {
+                resultBody.querySelector('.extraHTML').insertAdjacentHTML('beforeend', `<div>${content}</div>`)
+            }
+        })
+        mediaViewer.setup(resultBody, media)
+
+        // Add custom html from the pytest_html_results_table_html hook
+        tableHtml?.forEach((item) => {
+            resultBody.querySelector('td[class="extra"]').insertAdjacentHTML('beforeend', item)
+        })
+
+        return resultBody
+    },
+}
+
+module.exports = {
+    dom,
+    htmlToElements,
+    find,
+    findAll,
+}
+
+},{"./mediaviewer.js":6}],3:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const storageModule = require('./storage.js')
+
+const getFilteredSubSet = (filter) =>
+    manager.allData.tests.filter(({ result }) => filter.includes(result.toLowerCase()))
+
+const doInitFilter = () => {
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+}
+
+const doFilter = (type, show) => {
+    if (show) {
+        storageModule.showCategory(type)
+    } else {
+        storageModule.hideCategory(type)
+    }
+
+    const currentFilter = storageModule.getVisible()
+    const filteredSubset = getFilteredSubSet(currentFilter)
+    manager.setRender(filteredSubset)
+
+    const sortColumn = storageModule.getSort()
+    doSort(sortColumn, true)
+}
+
+module.exports = {
+    doFilter,
+    doInitFilter,
+}
+
+},{"./datamanager.js":1,"./sort.js":7,"./storage.js":8}],4:[function(require,module,exports){
+const { redraw, bindEvents, renderStatic } = require('./main.js')
+const { doInitFilter } = require('./filter.js')
+const { doInitSort } = require('./sort.js')
+const { manager } = require('./datamanager.js')
+const data = JSON.parse(document.getElementById('data-container').dataset.jsonblob)
+
+function init() {
+    manager.setManager(data)
+    doInitFilter()
+    doInitSort()
+    renderStatic()
+    redraw()
+    bindEvents()
+}
+
+init()
+
+},{"./datamanager.js":1,"./filter.js":3,"./main.js":5,"./sort.js":7}],5:[function(require,module,exports){
+const { dom, find, findAll } = require('./dom.js')
+const { manager } = require('./datamanager.js')
+const { doSort } = require('./sort.js')
+const { doFilter } = require('./filter.js')
+const {
+    getVisible,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    getSortDirection,
+    possibleFilters,
+} = require('./storage.js')
+
+const removeChildren = (node) => {
+    while (node.firstChild) {
+        node.removeChild(node.firstChild)
+    }
+}
+
+const renderStatic = () => {
+    const renderEnvironmentTable = () => {
+        const environment = manager.environment
+        const rows = Object.keys(environment).map((key) => dom.getStaticRow(key, environment[key]))
+        const table = document.getElementById('environment')
+        removeChildren(table)
+        rows.forEach((row) => table.appendChild(row))
+    }
+    renderEnvironmentTable()
+}
+
+const addItemToggleListener = (elem) => {
+    elem.addEventListener('click', ({ target }) => {
+        const id = target.parentElement.dataset.id
+        manager.toggleCollapsedItem(id)
+
+        const collapsedIds = getCollapsedIds()
+        if (collapsedIds.includes(id)) {
+            const updated = collapsedIds.filter((item) => item !== id)
+            setCollapsedIds(updated)
+        } else {
+            collapsedIds.push(id)
+            setCollapsedIds(collapsedIds)
+        }
+        redraw()
+    })
+}
+
+const renderContent = (tests) => {
+    const sortAttr = getSort(manager.initialSort)
+    const sortAsc = JSON.parse(getSortDirection())
+    const rows = tests.map(dom.getResultTBody)
+    const table = document.getElementById('results-table')
+    const tableHeader = document.getElementById('results-table-head')
+
+    const newTable = document.createElement('table')
+    newTable.id = 'results-table'
+
+    // remove all sorting classes and set the relevant
+    findAll('.sortable', tableHeader).forEach((elem) => elem.classList.remove('asc', 'desc'))
+    tableHeader.querySelector(`.sortable[data-column-type="${sortAttr}"]`)?.classList.add(sortAsc ? 'desc' : 'asc')
+    newTable.appendChild(tableHeader)
+
+    if (!rows.length) {
+        const emptyTable = document.getElementById('template_results-table__body--empty').content.cloneNode(true)
+        newTable.appendChild(emptyTable)
+    } else {
+        rows.forEach((row) => {
+            if (!!row) {
+                findAll('.collapsible td:not(.col-links', row).forEach(addItemToggleListener)
+                find('.logexpander', row).addEventListener('click',
+                    (evt) => evt.target.parentNode.classList.toggle('expanded'),
+                )
+                newTable.appendChild(row)
+            }
+        })
+    }
+
+    table.replaceWith(newTable)
+}
+
+const renderDerived = () => {
+    const currentFilter = getVisible()
+    possibleFilters.forEach((result) => {
+        const input = document.querySelector(`input[data-test-result="${result}"]`)
+        input.checked = currentFilter.includes(result)
+    })
+}
+
+const bindEvents = () => {
+    const filterColumn = (evt) => {
+        const { target: element } = evt
+        const { testResult } = element.dataset
+
+        doFilter(testResult, element.checked)
+        const collapsedIds = getCollapsedIds()
+        const updated = manager.renderData.tests.map((test) => {
+            return {
+                ...test,
+                collapsed: collapsedIds.includes(test.id),
+            }
+        })
+        manager.setRender(updated)
+        redraw()
+    }
+
+    const header = document.getElementById('environment-header')
+    header.addEventListener('click', () => {
+        const table = document.getElementById('environment')
+        table.classList.toggle('hidden')
+        header.classList.toggle('collapsed')
+    })
+
+    findAll('input[name="filter_checkbox"]').forEach((elem) => {
+        elem.addEventListener('click', filterColumn)
+    })
+
+    findAll('.sortable').forEach((elem) => {
+        elem.addEventListener('click', (evt) => {
+            const { target: element } = evt
+            const { columnType } = element.dataset
+            doSort(columnType)
+            redraw()
+        })
+    })
+
+    document.getElementById('show_all_details').addEventListener('click', () => {
+        manager.allCollapsed = false
+        setCollapsedIds([])
+        redraw()
+    })
+    document.getElementById('hide_all_details').addEventListener('click', () => {
+        manager.allCollapsed = true
+        const allIds = manager.renderData.tests.map((test) => test.id)
+        setCollapsedIds(allIds)
+        redraw()
+    })
+}
+
+const redraw = () => {
+    const { testSubset } = manager
+
+    renderContent(testSubset)
+    renderDerived()
+}
+
+module.exports = {
+    redraw,
+    bindEvents,
+    renderStatic,
+}
+
+},{"./datamanager.js":1,"./dom.js":2,"./filter.js":3,"./sort.js":7,"./storage.js":8}],6:[function(require,module,exports){
+class MediaViewer {
+    constructor(assets) {
+        this.assets = assets
+        this.index = 0
+    }
+
+    nextActive() {
+        this.index = this.index === this.assets.length - 1 ? 0 : this.index + 1
+        return [this.activeFile, this.index]
+    }
+
+    prevActive() {
+        this.index = this.index === 0 ? this.assets.length - 1 : this.index -1
+        return [this.activeFile, this.index]
+    }
+
+    get currentIndex() {
+        return this.index
+    }
+
+    get activeFile() {
+        return this.assets[this.index]
+    }
+}
+
+
+const setup = (resultBody, assets) => {
+    if (!assets.length) {
+        resultBody.querySelector('.media').classList.add('hidden')
+        return
+    }
+
+    const mediaViewer = new MediaViewer(assets)
+    const container = resultBody.querySelector('.media-container')
+    const leftArrow = resultBody.querySelector('.media-container__nav--left')
+    const rightArrow = resultBody.querySelector('.media-container__nav--right')
+    const mediaName = resultBody.querySelector('.media__name')
+    const counter = resultBody.querySelector('.media__counter')
+    const imageEl = resultBody.querySelector('img')
+    const sourceEl = resultBody.querySelector('source')
+    const videoEl = resultBody.querySelector('video')
+
+    const setImg = (media, index) => {
+        if (media?.format_type === 'image') {
+            imageEl.src = media.path
+
+            imageEl.classList.remove('hidden')
+            videoEl.classList.add('hidden')
+        } else if (media?.format_type === 'video') {
+            sourceEl.src = media.path
+
+            videoEl.classList.remove('hidden')
+            imageEl.classList.add('hidden')
+        }
+
+        mediaName.innerText = media?.name
+        counter.innerText = `${index + 1} / ${assets.length}`
+    }
+    setImg(mediaViewer.activeFile, mediaViewer.currentIndex)
+
+    const moveLeft = () => {
+        const [media, index] = mediaViewer.prevActive()
+        setImg(media, index)
+    }
+    const doRight = () => {
+        const [media, index] = mediaViewer.nextActive()
+        setImg(media, index)
+    }
+    const openImg = () => {
+        window.open(mediaViewer.activeFile.path, '_blank')
+    }
+    if (assets.length === 1) {
+        container.classList.add('media-container--fullscreen')
+    } else {
+        leftArrow.addEventListener('click', moveLeft)
+        rightArrow.addEventListener('click', doRight)
+    }
+    imageEl.addEventListener('click', openImg)
+}
+
+module.exports = {
+    setup,
+}
+
+},{}],7:[function(require,module,exports){
+const { manager } = require('./datamanager.js')
+const storageModule = require('./storage.js')
+
+const genericSort = (list, key, ascending, customOrder) => {
+    let sorted
+    if (customOrder) {
+        sorted = list.sort((a, b) => {
+            const aValue = a.result.toLowerCase()
+            const bValue = b.result.toLowerCase()
+
+            const aIndex = customOrder.findIndex((item) => item.toLowerCase() === aValue)
+            const bIndex = customOrder.findIndex((item) => item.toLowerCase() === bValue)
+
+            // Compare the indices to determine the sort order
+            return aIndex - bIndex
+        })
+    } else {
+        sorted = list.sort((a, b) => a[key] === b[key] ? 0 : a[key] > b[key] ? 1 : -1)
+    }
+
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const durationSort = (list, ascending) => {
+    const parseDuration = (duration) => {
+        if (duration.includes(':')) {
+            // If it's in the format "HH:mm:ss"
+            const [hours, minutes, seconds] = duration.split(':').map(Number)
+            return (hours * 3600 + minutes * 60 + seconds) * 1000
+        } else {
+            // If it's in the format "nnn ms"
+            return parseInt(duration)
+        }
+    }
+    const sorted = list.sort((a, b) => parseDuration(a['duration']) - parseDuration(b['duration']))
+    if (ascending) {
+        sorted.reverse()
+    }
+    return sorted
+}
+
+const doInitSort = () => {
+    const type = storageModule.getSort(manager.initialSort)
+    const ascending = storageModule.getSortDirection()
+    const list = manager.testSubset
+    const initialOrder = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed', 'Skipped', 'Passed']
+
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    if (type?.toLowerCase() === 'original') {
+        manager.setRender(list)
+    } else {
+        let sortedList
+        switch (type) {
+        case 'duration':
+            sortedList = durationSort(list, ascending)
+            break
+        case 'result':
+            sortedList = genericSort(list, type, ascending, initialOrder)
+            break
+        default:
+            sortedList = genericSort(list, type, ascending)
+            break
+        }
+        manager.setRender(sortedList)
+    }
+}
+
+const doSort = (type, skipDirection) => {
+    const newSortType = storageModule.getSort(manager.initialSort) !== type
+    const currentAsc = storageModule.getSortDirection()
+    let ascending
+    if (skipDirection) {
+        ascending = currentAsc
+    } else {
+        ascending = newSortType ? false : !currentAsc
+    }
+    storageModule.setSort(type)
+    storageModule.setSortDirection(ascending)
+
+    const list = manager.testSubset
+    const sortedList = type === 'duration' ? durationSort(list, ascending) : genericSort(list, type, ascending)
+    manager.setRender(sortedList)
+}
+
+module.exports = {
+    doInitSort,
+    doSort,
+}
+
+},{"./datamanager.js":1,"./storage.js":8}],8:[function(require,module,exports){
+const possibleFilters = [
+    'passed',
+    'skipped',
+    'failed',
+    'error',
+    'xfailed',
+    'xpassed',
+    'rerun',
+]
+
+const getVisible = () => {
+    const url = new URL(window.location.href)
+    const settings = new URLSearchParams(url.search).get('visible')
+    const lower = (item) => {
+        const lowerItem = item.toLowerCase()
+        if (possibleFilters.includes(lowerItem)) {
+            return lowerItem
+        }
+        return null
+    }
+    return settings === null ?
+        possibleFilters :
+        [...new Set(settings?.split(',').map(lower).filter((item) => item))]
+}
+
+const hideCategory = (categoryToHide) => {
+    const url = new URL(window.location.href)
+    const visibleParams = new URLSearchParams(url.search).get('visible')
+    const currentVisible = visibleParams ? visibleParams.split(',') : [...possibleFilters]
+    const settings = [...new Set(currentVisible)].filter((f) => f !== categoryToHide).join(',')
+
+    url.searchParams.set('visible', settings)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const showCategory = (categoryToShow) => {
+    if (typeof window === 'undefined') {
+        return
+    }
+    const url = new URL(window.location.href)
+    const currentVisible = new URLSearchParams(url.search).get('visible')?.split(',').filter(Boolean) ||
+        [...possibleFilters]
+    const settings = [...new Set([categoryToShow, ...currentVisible])]
+    const noFilter = possibleFilters.length === settings.length || !settings.length
+
+    noFilter ? url.searchParams.delete('visible') : url.searchParams.set('visible', settings.join(','))
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getSort = (initialSort) => {
+    const url = new URL(window.location.href)
+    let sort = new URLSearchParams(url.search).get('sort')
+    if (!sort) {
+        sort = initialSort || 'result'
+    }
+    return sort
+}
+
+const setSort = (type) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('sort', type)
+    window.history.pushState({}, null, unescape(url.href))
+}
+
+const getCollapsedCategory = (renderCollapsed) => {
+    let categories
+    if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        const collapsedItems = new URLSearchParams(url.search).get('collapsed')
+        switch (true) {
+        case !renderCollapsed && collapsedItems === null:
+            categories = ['passed']
+            break
+        case collapsedItems?.length === 0 || /^["']{2}$/.test(collapsedItems):
+            categories = []
+            break
+        case /^all$/.test(collapsedItems) || collapsedItems === null && /^all$/.test(renderCollapsed):
+            categories = [...possibleFilters]
+            break
+        default:
+            categories = collapsedItems?.split(',').map((item) => item.toLowerCase()) || renderCollapsed
+            break
+        }
+    } else {
+        categories = []
+    }
+    return categories
+}
+
+const getSortDirection = () => JSON.parse(sessionStorage.getItem('sortAsc')) || false
+const setSortDirection = (ascending) => sessionStorage.setItem('sortAsc', ascending)
+
+const getCollapsedIds = () => JSON.parse(sessionStorage.getItem('collapsedIds')) || []
+const setCollapsedIds = (list) => sessionStorage.setItem('collapsedIds', JSON.stringify(list))
+
+module.exports = {
+    getVisible,
+    hideCategory,
+    showCategory,
+    getCollapsedIds,
+    setCollapsedIds,
+    getSort,
+    setSort,
+    getSortDirection,
+    setSortDirection,
+    getCollapsedCategory,
+    possibleFilters,
+}
+
+},{}]},{},[4]);
+    </script>
+  </footer>
+  </body>
+</html>
