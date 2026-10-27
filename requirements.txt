@@ -1,4 +1,5 @@
 pytest
 pytest-playwright
 pytest-html
+pytest-rerunfailures
 beautifulsoup4
